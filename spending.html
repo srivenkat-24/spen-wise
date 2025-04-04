@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Spending</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .red-bar { background-color: red !important; }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md bg-gray-900 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-green-400 mb-4 text-center">Check Spending 🔍</h1>
+    
+    <input id="spendingInput" type="number" placeholder="Enter Spending Amount (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    <button id="checkSpending" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition">✅ Check Now</button>
+
+    <div id="progressSection" class="hidden mt-4">
+      <p class="text-sm text-gray-400">Short-Term Goal Covered: <span id="shortTermText">0%</span></p>
+      <div class="w-full bg-gray-700 rounded-full h-4 mt-1">
+        <div id="shortTermProgress" class="bg-green-500 h-4 rounded-full"></div>
+      </div>
+
+      <p class="text-sm text-gray-400 mt-2">Long-Term Goal Covered: <span id="longTermText">0%</span></p>
+      <div class="w-full bg-gray-700 rounded-full h-4 mt-1">
+        <div id="longTermProgress" class="bg-blue-500 h-4 rounded-full"></div>
+      </div>
+
+      <p class="text-sm text-gray-400 mt-2">Salary Percentage Used: <span id="salaryText">0%</span></p>
+      <div class="w-full bg-gray-700 rounded-full h-4 mt-1">
+        <div id="salaryPercentage" class="bg-green-500 h-4 rounded-full"></div>
+      </div>
+
+      <button id="spendingInsights" class="w-full bg-gray-700 text-white py-2 px-4 rounded mt-3 hover:bg-gray-600 transition">💡 Spending Insights</button>
+    </div>
+  </div>
+
+  <script>
+    // Fetch values from localStorage
+    let salary = parseFloat(localStorage.getItem('salary')) || 0;
+    let shortTerm = parseFloat(localStorage.getItem('shortTerm')) || 0;
+    let longTerm = parseFloat(localStorage.getItem('longTerm')) || 0;
+
+    console.log("Retrieved Values from localStorage:");
+    console.log("Salary:", salary);
+    console.log("Short-Term Goal:", shortTerm);
+    console.log("Long-Term Goal:", longTerm);
+
+    document.getElementById('checkSpending').addEventListener('click', () => {
+      let spend = parseFloat(document.getElementById('spendingInput').value);
+      if (isNaN(spend) || spend <= 0) return;
+
+      let shortPct = shortTerm > 0 ? (spend / shortTerm) * 100 : 0;
+      let longPct = longTerm > 0 ? (spend / longTerm) * 100 : 0;
+      let salaryPct = salary > 0 ? (spend / salary) * 100 : 0;
+
+      console.log("Calculated Percentages:");
+      console.log("Short-Term %:", shortPct, "Long-Term %:", longPct, "Salary %:", salaryPct);
+
+      document.getElementById('shortTermText').textContent = shortPct.toFixed(1) + "%";
+      document.getElementById('longTermText').textContent = longPct.toFixed(1) + "%";
+      document.getElementById('salaryText').textContent = salaryPct.toFixed(1) + "%";
+
+      document.getElementById('shortTermProgress').style.width = Math.min(shortPct, 100) + "%";
+      document.getElementById('longTermProgress').style.width = Math.min(longPct, 100) + "%";
+      document.getElementById('salaryPercentage').style.width = Math.min(salaryPct, 100) + "%";
+
+      // Highlight salary bar in red if spending exceeds 3% of salary
+      document.getElementById('salaryPercentage').classList.toggle('red-bar', salaryPct > 3);
+      document.getElementById('progressSection').classList.remove('hidden');
+    });
+
+    document.getElementById('spendingInsights').addEventListener('click', () => {
+      let popup = document.createElement("div");
+      popup.innerHTML = `
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+          <div class="bg-gray-900 text-white p-6 rounded-lg shadow-lg max-w-sm">
+            <h2 class="text-lg font-bold mb-2">💡 Spending Insights</h2>
+            <p>5% of salary spent every day = 150% in a month.</p>
+            <p>4% daily = 120% in a month.</p>
+            <p>3% daily = 90% in a month.</p>
+            <p>2% daily = 60% in a month.</p>
+            <p>1% daily = 30% in a month.</p>
+            <p class="mt-2 font-semibold">Though the percentages are very small, these add up to big chunks. Spend wisely!</p>
+            <button id="closePopup" class="w-full mt-4 bg-red-500 py-2 px-4 rounded hover:bg-red-600">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popup);
+      document.getElementById("closePopup").addEventListener("click", () => popup.remove());
+    });
+  </script>
+</body>
+</html>

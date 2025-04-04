@@ -1,0 +1,64 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spend Wise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md bg-gray-900 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-green-400 mb-4 text-center">Spend Wise</h1>
+    
+    <input id="salaryInput" type="number" placeholder="Enter Salary (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    
+    <h2 class="text-lg font-semibold text-green-400 mt-4">Short-Term Goal</h2>
+    <input id="shortTermGoal" type="text" placeholder="Smartphone" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    <input id="shortTermAmount" type="number" placeholder="Amount (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    
+    <h2 class="text-lg font-semibold text-green-400 mt-4">Long-Term Goal</h2>
+    <input id="longTermGoal" type="text" placeholder="House" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    <input id="longTermAmount" type="number" placeholder="Amount (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+    
+    <button id="saveData" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition">💾 Save & Proceed</button>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach((input, index) => {
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          if (index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          } else {
+            document.getElementById('saveData').click();
+          }
+        }
+      });
+    });
+
+    document.getElementById('saveData').addEventListener('click', () => {
+      let salary = parseFloat(document.getElementById('salaryInput').value);
+      let shortTerm = parseFloat(document.getElementById('shortTermAmount').value);
+      let longTerm = parseFloat(document.getElementById('longTermAmount').value);
+
+      if (isNaN(salary) || isNaN(shortTerm) || isNaN(longTerm)) {
+        alert("Please enter valid numbers for all fields!"); // Optional safety check
+        return;
+      }
+
+      localStorage.setItem('salary', salary);
+      localStorage.setItem('shortTerm', shortTerm);
+      localStorage.setItem('longTerm', longTerm);
+
+      console.log("Stored in localStorage:");
+      console.log("Salary:", salary, "Short-Term:", shortTerm, "Long-Term:", longTerm);
+      
+      window.location.href = 'options.html';
+    });
+
+  </script>
+</body>
+</html>

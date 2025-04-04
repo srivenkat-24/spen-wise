@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-4xl p-6 bg-gray-900 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">Your Expenses Report</h1>
+
+    <div id="reportContainer" class="w-full">
+      <p id="salarySpent" class="text-lg mb-6 text-center text-yellow-300 font-semibold"></p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-lg font-bold text-green-400 mb-2">✅ Essential Spending</h2>
+          <p id="essentialPercentage" class="mb-4 text-sm text-gray-300"></p>
+          <canvas id="essentialChart" class="w-full"></canvas>
+        </div>
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-lg font-bold text-red-400 mb-2">⛔ Non-Essential Spending</h2>
+          <p id="nonEssentialPercentage" class="mb-4 text-sm text-gray-300"></p>
+          <canvas id="nonEssentialChart" class="w-full"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 p-4 rounded-lg">
+        <h2 class="text-lg font-bold text-cyan-400 mb-2">💰 Remaining Salary</h2>
+        <div class="w-full bg-gray-700 h-6 rounded overflow-hidden mb-2 relative">
+          <div id="progress" class="h-full text-sm font-semibold flex items-center justify-center transition-all duration-500 ease-in-out" style="width: 0%;">
+            <span id="progressText" class="absolute left-1/2 transform -translate-x-1/2">0%</span>
+          </div>
+        </div>
+        <p id="remainingSalaryText" class="text-sm text-gray-300 text-center"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const salary = parseFloat(localStorage.getItem('salary'));
+      if (!salary || isNaN(salary) || salary <= 0) {
+        alert("Salary not found. Please set your salary on the home page.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const expensesByDate = JSON.parse(localStorage.getItem('calendarExpenses')) || {};
+      const allExpenses = Object.values(expensesByDate).flat();
+
+      const essentialExpenses = allExpenses.filter(e => e.type === 'essential');
+      const nonEssentialExpenses = allExpenses.filter(e => e.type === 'non-essential');
+
+      const essentialTotal = essentialExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      const nonEssentialTotal = nonEssentialExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      const totalSpent = essentialTotal + nonEssentialTotal;
+      const remainingSalary = salary - totalSpent;
+
+      document.getElementById('salarySpent').innerHTML = `Total spending: ₹${totalSpent.toFixed(2)}<br>(It is ${(totalSpent / salary * 100).toFixed(2)}% of your salary)`;
+      document.getElementById('essentialPercentage').innerText = `Essential spending: ${(essentialTotal / salary * 100).toFixed(2)}% of salary`;
+      document.getElementById('nonEssentialPercentage').innerText = `Non-Essential spending: ${(nonEssentialTotal / salary * 100).toFixed(2)}% of salary`;
+      document.getElementById('remainingSalaryText').innerText = `Remaining Salary: ₹${remainingSalary.toFixed(2)}`;
+
+      const progress = document.getElementById('progress');
+      const progressText = document.getElementById('progressText');
+      const percentRemaining = (remainingSalary / salary) * 100;
+      progress.style.width = `${percentRemaining}%`;
+      progressText.innerText = `${percentRemaining.toFixed(2)}% remaining`;
+
+      if (percentRemaining > 75) {
+        progress.style.backgroundColor = 'green';
+        progressText.style.color = 'white';
+      } else if (percentRemaining > 45) {
+        progress.style.backgroundColor = 'yellow';
+        progressText.style.color = 'black';
+      } else {
+        progress.style.backgroundColor = 'red';
+        progressText.style.color = 'white';
+      }
+
+      function createPieChart(canvasId, data) {
+        new Chart(document.getElementById(canvasId), {
+          type: 'pie',
+          data: {
+            labels: Object.keys(data),
+            datasets: [{
+              data: Object.values(data),
+              backgroundColor: [
+                '#ff6384', '#36a2eb', '#ffce56',
+                '#4bc0c0', '#9966ff', '#ff9f40'
+              ]
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: 'white'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const normalize = (str) => str.trim().toLowerCase();
+
+      const essentialData = essentialExpenses.reduce((acc, e) => {
+        const key = normalize(e.name);
+        acc[key] = (acc[key] || 0) + parseFloat(e.amount);
+        return acc;
+      }, {});
+
+      const nonEssentialData = nonEssentialExpenses.reduce((acc, e) => {
+        const key = normalize(e.name);
+        acc[key] = (acc[key] || 0) + parseFloat(e.amount);
+        return acc;
+      }, {});
+
+      createPieChart('essentialChart', essentialData);
+      createPieChart('nonEssentialChart', nonEssentialData);
+    };
+  </script>
+</body>
+</html>
+

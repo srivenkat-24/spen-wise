@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spending Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-2xl bg-gray-900 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-green-400 mb-4 text-center">Enter Your Expenses</h1>
+
+    <div class="mb-4">
+      <label class="block mb-2">I want my expenses analysis report:</label>
+      <select id="analysisSpan" class="w-full p-2 rounded bg-gray-800 text-white">
+        <option value="daily">Daily</option>
+        <option value="3-day">Once every three days</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-2">Select Date:</label>
+      <input type="date" id="datePicker" class="w-full p-2 rounded bg-gray-800 text-white cursor-pointer text-lg">
+    </div>
+
+    <div id="expensesSection" class="mb-4">
+      <input type="text" id="expenseName" placeholder="Expense Name" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+      <input type="number" id="expenseAmount" placeholder="Amount (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+      <select id="expenseType" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+        <option value="essential">Essential</option>
+        <option value="non-essential">Non-Essential</option>
+      </select>
+      <button id="addExpense" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">➕ Add Expense</button>
+    </div>
+
+    <div class="mb-4">
+      <h2 id="expenseHeading" class="text-lg font-semibold mb-2 text-yellow-400">📝 Expenses</h2>
+      <ul id="expenseList" class="list-disc list-inside text-sm text-white space-y-1"></ul>
+    </div>
+
+    <button id="doneForTheDay" class="w-full bg-yellow-600 text-white py-2 px-4 rounded hover:bg-yellow-700 transition mb-4">✅ Done for the Day</button>
+    <button id="viewReport" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition hidden">📈 View Report</button>
+  </div>
+
+  <script>
+    const analysisSpan = document.getElementById('analysisSpan');
+    const datePicker = document.getElementById('datePicker');
+    const addExpense = document.getElementById('addExpense');
+    const doneForTheDay = document.getElementById('doneForTheDay');
+    const viewReport = document.getElementById('viewReport');
+    const expenseList = document.getElementById('expenseList');
+    const expenseHeading = document.getElementById('expenseHeading');
+
+    let enteredDates = [];
+    let expensesByDate = JSON.parse(localStorage.getItem('calendarExpenses')) || {};
+
+    function formatDateDisplay(dateString) {
+      const [year, month, day] = dateString.split("-");
+      return `${day}-${month}-${year}`;
+    }
+
+    function renderExpensesForDate(date) {
+      expenseList.innerHTML = '';
+      if (!date) {
+        expenseHeading.textContent = `📝 Expenses`;
+        return;
+      }
+
+      const formattedDate = formatDateDisplay(date);
+      expenseHeading.textContent = `📝 Expenses on ${formattedDate}`;
+
+      if (expensesByDate[date]) {
+        expensesByDate[date].forEach((exp, index) => {
+          const item = document.createElement('li');
+          item.classList.add("flex", "justify-between", "items-center");
+
+          item.innerHTML = `
+            <span>${exp.name} - ₹${exp.amount} (${exp.type})</span>
+            <button class="text-red-400 hover:text-red-600 ml-4" onclick="deleteExpense('${date}', ${index})">❌</button>
+          `;
+          expenseList.appendChild(item);
+        });
+      }
+    }
+
+    function deleteExpense(date, index) {
+      if (expensesByDate[date]) {
+        expensesByDate[date].splice(index, 1);
+        localStorage.setItem('calendarExpenses', JSON.stringify(expensesByDate));
+        renderExpensesForDate(date);
+      }
+    }
+
+    window.deleteExpense = deleteExpense;
+
+    datePicker.addEventListener('change', () => {
+      renderExpensesForDate(datePicker.value);
+    });
+
+    addExpense.addEventListener('click', () => {
+      const date = datePicker.value;
+      const nameInput = document.getElementById('expenseName').value.trim();
+      const name = nameInput.toLowerCase(); // 🟢 normalize to lowercase here
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      const type = document.getElementById('expenseType').value;
+
+      if (!date || !name || isNaN(amount)) return;
+
+      if (!expensesByDate[date]) expensesByDate[date] = [];
+      expensesByDate[date].push({ name, amount, type });
+
+      localStorage.setItem('calendarExpenses', JSON.stringify(expensesByDate));
+
+      document.getElementById('expenseName').value = '';
+      document.getElementById('expenseAmount').value = '';
+
+      renderExpensesForDate(date);
+    });
+
+    doneForTheDay.addEventListener('click', () => {
+      const date = datePicker.value;
+      if (!date || enteredDates.includes(date)) return;
+
+      enteredDates.push(date);
+      const span = analysisSpan.value;
+      let requiredDays = span === 'daily' ? 1 : span === '3-day' ? 3 : span === 'weekly' ? 7 : 30;
+
+      if (enteredDates.length >= requiredDays) {
+        viewReport.classList.remove('hidden');
+      }
+    });
+
+    viewReport.addEventListener('click', () => {
+      window.location.href = 'report.html';
+    });
+  </script>
+</body>
+</html>
+
