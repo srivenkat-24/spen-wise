@@ -11,8 +11,10 @@
 </head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center">
   <div class="w-full max-w-md bg-gray-900 p-6 rounded-lg shadow-lg">
-    <h1 class="text-2xl font-bold text-green-400 mb-4 text-center">Check Spending 🔍</h1>
+    <h1 class="text-2xl font-bold text-green-400 mb-2 text-center">Check Spending 🔍</h1>
     
+    <button id="infoBtn" class="w-full text-sm text-blue-400 underline mb-4 hover:text-blue-300">ℹ️ What is this?</button>
+
     <input id="spendingInput" type="number" placeholder="Enter Spending Amount (₹)" class="w-full p-2 rounded bg-gray-800 text-white mb-2">
     <button id="checkSpending" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition">✅ Check Now</button>
 
@@ -37,15 +39,9 @@
   </div>
 
   <script>
-    // Fetch values from localStorage
     let salary = parseFloat(localStorage.getItem('salary')) || 0;
     let shortTerm = parseFloat(localStorage.getItem('shortTerm')) || 0;
     let longTerm = parseFloat(localStorage.getItem('longTerm')) || 0;
-
-    console.log("Retrieved Values from localStorage:");
-    console.log("Salary:", salary);
-    console.log("Short-Term Goal:", shortTerm);
-    console.log("Long-Term Goal:", longTerm);
 
     document.getElementById('checkSpending').addEventListener('click', () => {
       let spend = parseFloat(document.getElementById('spendingInput').value);
@@ -55,9 +51,6 @@
       let longPct = longTerm > 0 ? (spend / longTerm) * 100 : 0;
       let salaryPct = salary > 0 ? (spend / salary) * 100 : 0;
 
-      console.log("Calculated Percentages:");
-      console.log("Short-Term %:", shortPct, "Long-Term %:", longPct, "Salary %:", salaryPct);
-
       document.getElementById('shortTermText').textContent = shortPct.toFixed(1) + "%";
       document.getElementById('longTermText').textContent = longPct.toFixed(1) + "%";
       document.getElementById('salaryText').textContent = salaryPct.toFixed(1) + "%";
@@ -66,7 +59,6 @@
       document.getElementById('longTermProgress').style.width = Math.min(longPct, 100) + "%";
       document.getElementById('salaryPercentage').style.width = Math.min(salaryPct, 100) + "%";
 
-      // Highlight salary bar in red if spending exceeds 3% of salary
       document.getElementById('salaryPercentage').classList.toggle('red-bar', salaryPct > 3);
       document.getElementById('progressSection').classList.remove('hidden');
     });
@@ -77,11 +69,12 @@
         <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
           <div class="bg-gray-900 text-white p-6 rounded-lg shadow-lg max-w-sm">
             <h2 class="text-lg font-bold mb-2">💡 Spending Insights</h2>
-            <p>5% of salary spent every day = 150% in a month.</p>
-            <p>4% daily = 120% in a month.</p>
-            <p>3% daily = 90% in a month.</p>
-            <p>2% daily = 60% in a month.</p>
-            <p>1% daily = 30% in a month.</p>
+            <p class="mb-3">Here’s what each percentage of your salary spent daily adds up to by month's end:</p>
+            <p><strong>5%</strong> (₹${(salary * 0.05).toFixed(0)}) adds up to ₹${(salary * 0.05 * 30).toFixed(0)} per month</p>
+            <p><strong>4%</strong> (₹${(salary * 0.04).toFixed(0)}) adds up to ₹${(salary * 0.04 * 30).toFixed(0)} per month</p>
+            <p><strong>3%</strong> (₹${(salary * 0.03).toFixed(0)}) adds up to ₹${(salary * 0.03 * 30).toFixed(0)} per month</p>
+            <p><strong>2%</strong> (₹${(salary * 0.02).toFixed(0)}) adds up to ₹${(salary * 0.02 * 30).toFixed(0)} per month</p>
+            <p><strong>1%</strong> (₹${(salary * 0.01).toFixed(0)}) adds up to ₹${(salary * 0.01 * 30).toFixed(0)} per month</p>
             <p class="mt-2 font-semibold">Though the percentages are very small, these add up to big chunks. Spend wisely!</p>
             <button id="closePopup" class="w-full mt-4 bg-red-500 py-2 px-4 rounded hover:bg-red-600">Close</button>
           </div>
@@ -89,6 +82,26 @@
       `;
       document.body.appendChild(popup);
       document.getElementById("closePopup").addEventListener("click", () => popup.remove());
+    });
+
+    document.getElementById('infoBtn').addEventListener('click', () => {
+      let infoPopup = document.createElement("div");
+      infoPopup.innerHTML = `
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+          <div class="bg-gray-900 text-white p-6 rounded-lg shadow-lg max-w-sm">
+            <h2 class="text-lg font-bold mb-2">ℹ️ What is this?</h2>
+            <p>This tool helps you check how much of your salary or savings goals an expense will consume.</p>
+            <p>Just enter an expense and it shows:</p>
+            <ul class="list-disc list-inside mt-2 mb-2 text-sm">
+              <li>What percentage of your <strong>Goals</strong>, and <strong>Salary</strong> it covers.</li>
+            </ul>
+            <p>It's a simple check to help you make mindful spending decisions.</p>
+            <button id="closeInfoPopup" class="w-full mt-4 bg-blue-500 py-2 px-4 rounded hover:bg-blue-600">Got it</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(infoPopup);
+      document.getElementById("closeInfoPopup").addEventListener("click", () => infoPopup.remove());
     });
   </script>
 </body>
